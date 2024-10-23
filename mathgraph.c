@@ -13,7 +13,16 @@
 
 double evaluate(double (*f)(double),double x);
 double Sin(double x);
-void Draw(int funcOffset,int graphXoffset,int graphHeight,int graphLength,int graphYoffset);
+
+typedef struct {
+	int funcOffset;
+	int* graphXoffset;
+	int graphHeight;
+	int graphLength;
+	int* graphYoffset;
+
+} DrawParameters;
+void DrawFunc(DrawParameters* dp);
 
 int main(int argc, int **argv){
 	
@@ -39,7 +48,8 @@ int main(int argc, int **argv){
 		start_time = time(0);
 		ioctl(STDOUT_FILENO,TIOCGWINSZ,&w);
 		CLRSCR();
-		Draw(funcOffset,graphXoffset,graphHeight,graphLength,graphYoffset);	
+		DrawParameters dp = {.funcOffset = funcOffset, .graphXoffset = &graphXoffset, .graphYoffset = &graphYoffset, .graphLength = graphLength, .graphHeight = graphHeight};
+		DrawFunc(&dp);	
 		CLRSCR();	
 		remainder = start_time - time(0) + interval;
 		funcOffset++;
@@ -50,18 +60,18 @@ int main(int argc, int **argv){
 }
 
 
-void Draw(int funcOffset,int graphXoffset,int graphHeight,int graphLength,int graphYoffset){
+void DrawFunc(DrawParameters* dp){
 
- for(int i = 0; i< graphLength; i++){
-	int value = (int)fmin(graphHeight + graphYoffset,(evaluate(Sin,(i+funcOffset)) + graphYoffset));
-        SETCURSOR(i+graphXoffset,value);
+ for(int i = 0; i< (*dp).graphLength; i++){
+	int value = (int)fmin((*dp).graphHeight + *dp->graphYoffset,(evaluate(Sin,(i+((*dp).funcOffset))) + (*dp->graphYoffset)));
+        SETCURSOR(i+(*dp->graphXoffset),value);
 	printf("■");
-	if(value == graphHeight + graphYoffset) continue;
+	if(value == (*dp).graphHeight + (*dp->graphYoffset)) continue;
 	int temp_value = value;
 	while(temp_value++){
-		SETCURSOR(i+graphXoffset,temp_value);
+		SETCURSOR(i+(*dp->graphXoffset),temp_value);
 		printf("▣");
-		if(temp_value >= graphHeight + graphYoffset) break;
+		if(temp_value >= (*dp).graphHeight + (*dp->graphYoffset)) break;
 	}
         
    }
@@ -72,6 +82,7 @@ double evaluate( double (*f)(double),double x){
 }
 
 double Sin(double x){
-	return sin(x*0.1f)*15;
+	return sin(x*0.1f)*10;
 }
+	
 
